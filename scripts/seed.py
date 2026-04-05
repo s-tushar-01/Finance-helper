@@ -44,9 +44,14 @@ def seed_db():
         
         print("Creating default categories and transactions for Admin user...")
         admin = users[0]
-        categories_data = ["Salary", "Food", "Rent", "Entertainment"]
-        categories = []
+        categories_data = [
+            # Incomes
+            "Salary", "Freelance", 
+            # Expenses
+            "Rent", "Utilities", "Food & Dining", "Transport", "Entertainment", "Shopping"
+        ]
         
+        categories = []
         for name in categories_data:
             cat = Category(user_id=admin.id, name=name)
             db.add(cat)
@@ -57,12 +62,36 @@ def seed_db():
             db.refresh(c)
             
         print("Adding sample transactions...")
-        txns = [
-            Transaction(user_id=admin.id, category_id=categories[0].id, amount=5000.0, type="income", date=datetime.now() - timedelta(days=10), notes="Monthly Salary"),
-            Transaction(user_id=admin.id, category_id=categories[2].id, amount=1200.0, type="expense", date=datetime.now() - timedelta(days=8), notes="Rent"),
-            Transaction(user_id=admin.id, category_id=categories[1].id, amount=150.0, type="expense", date=datetime.now() - timedelta(days=5), notes="Groceries"),
-            Transaction(user_id=admin.id, category_id=categories[3].id, amount=60.0, type="expense", date=datetime.now() - timedelta(days=2), notes="Movie tickets")
-        ]
+        import random
+        
+        txns = []
+        
+        # Consistent big incomes
+        for i in range(3):
+            # Salary once a month for the last 3 months
+            date = datetime.now() - timedelta(days=(i * 30) + 2)
+            txns.append(Transaction(user_id=admin.id, category_id=categories[0].id, amount=5500.0, type="income", date=date, notes="Monthly Salary"))
+            
+            # Rent once a month
+            txns.append(Transaction(user_id=admin.id, category_id=categories[2].id, amount=1500.0, type="expense", date=date + timedelta(days=1), notes="Monthly Rent"))
+            
+            # Utilities once a month
+            txns.append(Transaction(user_id=admin.id, category_id=categories[3].id, amount=random.uniform(90.0, 180.0), type="expense", date=date + timedelta(days=3), notes="Electric/Water Bill"))
+
+        # Random freelance incomes
+        for _ in range(5):
+             date = datetime.now() - timedelta(days=random.randint(1, 90))
+             txns.append(Transaction(user_id=admin.id, category_id=categories[1].id, amount=random.uniform(200.0, 1000.0), type="income", date=date, notes="Side Hustle / Client Work"))
+             
+        # Scrape expenses
+        expense_cats = categories[4:] # Food, Transport, Entertainment, Shopping
+        for _ in range(50):
+            date = datetime.now() - timedelta(days=random.randint(1, 90))
+            cat = random.choice(expense_cats)
+            # Make the expenses realistic
+            amount = random.uniform(10.0, 150.0) 
+            notes = f"Random {cat.name} transaction"
+            txns.append(Transaction(user_id=admin.id, category_id=cat.id, amount=round(amount, 2), type="expense", date=date, notes=notes))
         
         db.bulk_save_objects(txns)
         db.commit()
