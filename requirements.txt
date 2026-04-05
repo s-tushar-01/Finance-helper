@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy>=2.0
+pydantic>=2.0
+pydantic-settings
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+graphene
+pytest
+pytest-asyncio
+httpx
+email-validator
